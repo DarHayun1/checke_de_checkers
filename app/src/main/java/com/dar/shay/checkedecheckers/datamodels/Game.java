@@ -2,23 +2,27 @@ package com.dar.shay.checkedecheckers.datamodels;
 
 import java.util.Arrays;
 
-enum Move{
-    STEP,
-    EAT,
-    INVALID_MOVE
-}
-class Player{
-    boolean is_black=true;
-    boolean is_human=true;
-    Player(boolean is_black,boolean is_human){
+class Player {
+    boolean is_black;
+    boolean is_human;
+
+    Player(boolean is_black, boolean is_human) {
         this.is_black = is_black;
         this.is_human = is_human;
     }
 }
+
 public class Game {
+
+    public final static int BOARD_SIZE = 8;
+
     Square[][] board;
     Player black_player;
     Player white_player;
+
+    boolean is_black_turn = true;
+    private Point waitingPoint = null;
+
 
     public Square[][] getBoard() {
         return board;
@@ -33,84 +37,125 @@ public class Game {
                 '}';
     }
 
-    public Game(){
-        int BOARD_SIZE = 8;
-        board = new Square[BOARD_SIZE][BOARD_SIZE];
-        for (int i=0;i<BOARD_SIZE;i = i+2){
+    public Game(boolean is_black_start) {
+        board = getStartBoard();
+        this.is_black_turn = is_black_start;
+    }
+
+    private Square[][] getStartBoard() {
+        Square[][] new_board = new Square[BOARD_SIZE][BOARD_SIZE];
+        for (int i = 0; i < BOARD_SIZE; i = i + 2) {
             //setting the matrix to default values
             //line 0
-            board[0][i] = Square.WHITE_SQUARE;
-            board[0][i+1] = Square.WHITE_SOLDIER;
+            new_board[0][i] = Square.WHITE_SQUARE;
+            new_board[0][i + 1] = Square.WHITE_SOLDIER;
             //line 1
-            board[1][i] = Square.WHITE_SOLDIER;
-            board[1][i+1] = Square.WHITE_SQUARE;
+            new_board[1][i] = Square.WHITE_SOLDIER;
+            new_board[1][i + 1] = Square.WHITE_SQUARE;
             //line 2
-            board[2][i] = Square.WHITE_SQUARE;
-            board[2][i+1] = Square.WHITE_SOLDIER;
+            new_board[2][i] = Square.WHITE_SQUARE;
+            new_board[2][i + 1] = Square.WHITE_SOLDIER;
             //line 3
-            board[3][i] = Square.BLACK_SQUARE;
-            board[3][i+1] = Square.WHITE_SQUARE;
+            new_board[3][i] = Square.BLACK_SQUARE;
+            new_board[3][i + 1] = Square.WHITE_SQUARE;
             //line 4
-            board[4][i] = Square.WHITE_SQUARE;
-            board[4][i+1] = Square.BLACK_SQUARE;
+            new_board[4][i] = Square.WHITE_SQUARE;
+            new_board[4][i + 1] = Square.BLACK_SQUARE;
             //line 5
-            board[5][i] = Square.BLACK_SOLDIER;
-            board[5][i+1] = Square.WHITE_SQUARE;
+            new_board[5][i] = Square.BLACK_SOLDIER;
+            new_board[5][i + 1] = Square.WHITE_SQUARE;
             //line 6
-            board[6][i] = Square.WHITE_SQUARE;
-            board[6][i+1] = Square.BLACK_SOLDIER;
+            new_board[6][i] = Square.WHITE_SQUARE;
+            new_board[6][i + 1] = Square.BLACK_SOLDIER;
             //line 7
-            board[7][i] = Square.BLACK_SOLDIER;
-            board[7][i+1] = Square.WHITE_SQUARE;
+            new_board[7][i] = Square.BLACK_SOLDIER;
+            new_board[7][i + 1] = Square.WHITE_SQUARE;
         }
+        return new_board;
     }
-    Square getSquare(Point p){
+
+    Square getSquare(Point p) {
         return board[p.x][p.y];
     }
+
     void removeSoldier(Point p) {
         //assume's that the square is BLACK_SOLDIER / WHITE_SOLDIER
         board[p.x][p.y] = Square.BLACK_SQUARE;
     }
 
-    public Move move(Point source, Point destination, boolean is_black){
-        Move move_status = ValidateMove(source,destination,is_black);
-        if(move_status == Move.INVALID_MOVE) return Move.INVALID_MOVE;
+    public TilePickResult move(Point source, Point destination) {
+        TilePickResult tilePick_result_status = ValidateMove(source, destination, is_black_turn);
+        if (tilePick_result_status == TilePickResult.INVALID_MOVE)
+            return TilePickResult.INVALID_MOVE;
 
         removeSoldier(source);
-        if(is_black){
+        if (is_black_turn) {
             board[destination.x][destination.y] = Square.BLACK_SOLDIER;
-        }else{
+        } else {
             board[destination.x][destination.y] = Square.WHITE_SOLDIER;
         }
-        if(move_status == Move.EAT) {
-            int target_x = (source.x + destination.x)/2;
-            int target_y = (source.y + destination.y)/2;
-            removeSoldier(new Point(target_x,target_y));
-            return Move.EAT;
+        if (tilePick_result_status == TilePickResult.EAT) {
+            int target_x = (source.x + destination.x) / 2;
+            int target_y = (source.y + destination.y) / 2;
+            removeSoldier(new Point(target_x, target_y));
         }
-        return Move.STEP;
+        is_black_turn = !is_black_turn;
+        return tilePick_result_status;
     }
 
-    Move ValidateMove(Point source, Point destination, boolean is_black){
+    TilePickResult ValidateMove(Point source, Point destination, boolean is_black) {
         int diffX = Math.abs(source.x - destination.x);
         int diffY = Math.abs(source.y - destination.y);
-        if(diffX != diffY) return Move.INVALID_MOVE;
-        if(is_black){
-            if(board[source.x][source.y] != Square.BLACK_SOLDIER) return Move.INVALID_MOVE;
-        }else{
-            if(board[source.x][source.y] != Square.WHITE_SOLDIER) return Move.INVALID_MOVE;
+        if (diffX != diffY) return TilePickResult.INVALID_MOVE;
+        if (is_black) {
+            if (board[source.x][source.y] != Square.BLACK_SOLDIER)
+                return TilePickResult.INVALID_MOVE;
+        } else {
+            if (board[source.x][source.y] != Square.WHITE_SOLDIER)
+                return TilePickResult.INVALID_MOVE;
         }
         //diffX == diffY
-        if(diffX == 1 && board[destination.x][destination.y] == Square.BLACK_SQUARE) return Move.STEP;
-        else if(diffX == 2){
-            int target_x = (source.x + destination.x)/2;
-            int target_y = (source.y + destination.y)/2;
-            if(is_black && board[target_x][target_y] != Square.WHITE_SOLDIER) return Move.INVALID_MOVE;
-            if(!is_black && board[target_x][target_y] != Square.BLACK_SOLDIER) return Move.INVALID_MOVE;
-            return Move.EAT;
-        }else return Move.INVALID_MOVE;
+        if (diffX == 1 && board[destination.x][destination.y] == Square.BLACK_SQUARE)
+            return TilePickResult.STEP;
+        else if (diffX == 2) {
+            int target_x = (source.x + destination.x) / 2;
+            int target_y = (source.y + destination.y) / 2;
+            if (is_black && board[target_x][target_y] != Square.WHITE_SOLDIER)
+                return TilePickResult.INVALID_MOVE;
+            if (!is_black && board[target_x][target_y] != Square.BLACK_SOLDIER)
+                return TilePickResult.INVALID_MOVE;
+            return TilePickResult.EAT;
+        } else return TilePickResult.INVALID_MOVE;
 
     }
+
+    /**
+     * Handling a tile click
+     *
+     * @param tile - the tile clicked
+     * @return The result of the click
+     */
+    public TilePickResult tilePick(Point tile) {
+        if (waitingPoint != null) {
+            TilePickResult move_result = move(waitingPoint, tile);
+            if (move_result != TilePickResult.INVALID_MOVE)
+                waitingPoint = null;
+            return move_result;
+        }
+        //
+        else {
+            if (!checkIfCorrectSoldier(tile))
+                return TilePickResult.INVALID_MOVE;
+            waitingPoint = tile;
+            return TilePickResult.SOLDIER_PICK;
+        }
+    }
+
+    private boolean checkIfCorrectSoldier(Point tile) {
+        Square soldier_type = is_black_turn ? Square.BLACK_SOLDIER : Square.WHITE_SOLDIER;
+        return board[tile.x][tile.y] == soldier_type;
+    }
+
 }
 /*
 *  int diffX,diffY;

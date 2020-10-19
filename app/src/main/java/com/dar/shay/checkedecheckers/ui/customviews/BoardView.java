@@ -17,7 +17,6 @@ import com.dar.shay.checkedecheckers.datamodels.Square;
 public class BoardView extends FrameLayout {
 
     private ImageView[][] tiles = new ImageView[8][8];
-    private Point waitingPoint = null;
     private MoveListener mCallback;
 
     public BoardView(Context context) {
@@ -56,12 +55,7 @@ public class BoardView extends FrameLayout {
     }
 
     private void tileClicked(int x, int y) {
-        if (waitingPoint != null) {
-            mCallback.move(waitingPoint, new Point(x, y));
-            waitingPoint = null;
-        } else {
-            waitingPoint = new Point(x, y);
-        }
+        mCallback.tileClicked(new Point(x, y));
     }
 
     public void setBoard(Square[][] board) {

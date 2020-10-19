@@ -1,31 +1,25 @@
 package com.dar.shay.checkedecheckers.ui.main;
 
-import androidx.lifecycle.Observer;
-import androidx.lifecycle.ViewModelProvider;
-import androidx.lifecycle.ViewModelProviders;
-
 import android.content.Context;
 import android.os.Bundle;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
-
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.dar.shay.checkedecheckers.MoveListener;
-import com.dar.shay.checkedecheckers.R;
 import com.dar.shay.checkedecheckers.databinding.MainFragmentBinding;
 import com.dar.shay.checkedecheckers.datamodels.Point;
 import com.dar.shay.checkedecheckers.datamodels.Square;
+import com.dar.shay.checkedecheckers.datamodels.TilePickResult;
 
 import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class MainFragment extends Fragment implements MoveListener {
 
@@ -70,14 +64,11 @@ public class MainFragment extends Fragment implements MoveListener {
 
     private void setupObservers() {
 
-        mViewModel.getBoard().observe(getViewLifecycleOwner(), new Observer<Square[][]>() {
-            @Override
-            public void onChanged(Square[][] board) {
-                Log.d("Checke", "onChanged + " + board);
+        mViewModel.getBoard().observe(getViewLifecycleOwner(), board -> {
+            Log.d("Checke", "onChanged + " + Arrays.deepToString(board));
 
-                if (board != null)
-                 boardChanged(board);
-            }
+            if (board != null)
+                boardChanged(board);
         });
     }
 
@@ -86,7 +77,11 @@ public class MainFragment extends Fragment implements MoveListener {
     }
 
     @Override
-    public void move(Point origin, Point destination) {
-        mViewModel.move(origin, destination);
+    public void tileClicked(Point destination) {
+        TilePickResult click_result = mViewModel.tileClicked(destination);
+        switch (click_result) {
+            case INVALID_MOVE:
+                Toast.makeText(mContext, "Invalid Move ):", Toast.LENGTH_SHORT).show();
+        }
     }
 }
