@@ -22,7 +22,12 @@ public class Game {
     Player black_player;
     Player white_player;
 
-    boolean is_black_turn = true;
+    private boolean is_black_turn = true;
+
+    public boolean isBlackTurn() {
+        return is_black_turn;
+    }
+
     private Point waitingPoint = null;
 
 
@@ -137,7 +142,7 @@ public class Game {
             int target_y = (source.y + destination.y) / 2;
             if (is_black && (board[target_x][target_y] != Square.WHITE_SOLDIER) && (board[target_x][target_y] != Square.WHITE_KING))
                 return TilePickResult.INVALID_MOVE;
-            if (!is_black && (board[target_x][target_y] != Square.BLACK_SOLDIER) && (board[target_x][target_y] != Square.WHITE_KING))
+            if (!is_black && (board[target_x][target_y] != Square.BLACK_SOLDIER) && (board[target_x][target_y] != Square.BLACK_KING))
                 return TilePickResult.INVALID_MOVE;
             return TilePickResult.EAT;
         } else return TilePickResult.INVALID_MOVE;

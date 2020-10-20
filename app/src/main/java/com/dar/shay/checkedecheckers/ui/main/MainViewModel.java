@@ -13,16 +13,25 @@ import com.dar.shay.checkedecheckers.datamodels.TilePickResult;
 
 public class MainViewModel extends ViewModel {
 
-    Game game = new Game(true);
+    private Game game = new Game(true);
     private MutableLiveData<Square[][]> boardLiveData = new MutableLiveData<>();
+
+
+    private MutableLiveData<Boolean> bTurnLiveData = new MutableLiveData<>(true);
+
 
     public LiveData<Square[][]> getBoard() {
         return boardLiveData;
     }
 
+    public LiveData<Boolean> getBTurnLiveData() {
+        return bTurnLiveData;
+    }
+
     public void refreshData() {
         Log.d("Checke", "Refresh!");
         boardLiveData.setValue(game.getBoard());
+        bTurnLiveData.setValue(game.isBlackTurn());
     }
 
     public void newGame(boolean is_black_start) {

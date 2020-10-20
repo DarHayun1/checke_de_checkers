@@ -2,7 +2,6 @@ package com.dar.shay.checkedecheckers.ui.main;
 
 import android.content.Context;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,16 +9,16 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.dar.shay.checkedecheckers.MoveListener;
+import com.dar.shay.checkedecheckers.R;
 import com.dar.shay.checkedecheckers.databinding.MainFragmentBinding;
 import com.dar.shay.checkedecheckers.datamodels.Point;
 import com.dar.shay.checkedecheckers.datamodels.Square;
 import com.dar.shay.checkedecheckers.datamodels.TilePickResult;
-
-import java.util.Arrays;
 
 public class MainFragment extends Fragment implements MoveListener {
 
@@ -64,12 +63,21 @@ public class MainFragment extends Fragment implements MoveListener {
 
     private void setupObservers() {
 
-        mViewModel.getBoard().observe(getViewLifecycleOwner(), board -> {
-            Log.d("Checke", "onChanged + " + Arrays.deepToString(board));
+        mViewModel.getBoard().observe(getViewLifecycleOwner(), this::boardStateUpdate);
 
-            if (board != null)
-                boardChanged(board);
-        });
+        mViewModel.getBTurnLiveData().observe(getViewLifecycleOwner(), this::updateTurn);
+    }
+
+    private void boardStateUpdate(Square[][] board) {
+        if (board != null)
+            boardChanged(board);
+    }
+
+    private void updateTurn(Boolean is_black_turn) {
+        int drawable_id = is_black_turn ? R.drawable.black_king_ic : R.drawable.white_king_ic;
+        binding.turnIv.setImageDrawable(
+                ContextCompat.getDrawable(mContext, drawable_id)
+        );
     }
 
     private void boardChanged(Square[][] board) {
