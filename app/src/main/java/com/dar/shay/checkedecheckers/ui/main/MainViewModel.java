@@ -21,7 +21,7 @@ public class MainViewModel extends ViewModel {
     }
 
     public void refreshData() {
-        Log.d("Checke", game.toString());
+        Log.d("Checke", "Refresh!");
         boardLiveData.setValue(game.getBoard());
     }
 
@@ -31,8 +31,6 @@ public class MainViewModel extends ViewModel {
     }
 
     public TilePickResult tileClicked(Point destination) {
-        TilePickResult tilePickResult = game.tilePick(destination);
-        refreshData();
-        return tilePickResult;
+        return game.tilePick(destination);
     }
 }

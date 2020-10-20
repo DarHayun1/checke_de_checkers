@@ -60,13 +60,14 @@ public class BoardView extends FrameLayout {
 
     public void setBoard(Square[][] board) {
 
+        Log.w("Checke", "setBoard Started");
         for (int i = 0; i < board.length; i++) {
             Square[] row = board[i];
             for (int j = 0; j < row.length; j++) {
-                Log.d("Checke", i + "," + j + row[j].toString());
                 changeTile(tiles[i][j], row[j]);
             }
         }
+        Log.w("Checke", "setBoard Ended");
     }
 
     private void changeTile(ImageView view, Square state) {
@@ -77,6 +78,12 @@ public class BoardView extends FrameLayout {
                 break;
             case WHITE_SOLDIER:
                 view.setImageDrawable(ContextCompat.getDrawable(getContext(), R.drawable.white_soldier_ic));
+                break;
+            case BLACK_KING:
+                view.setImageDrawable(ContextCompat.getDrawable(getContext(), R.drawable.black_king_ic));
+                break;
+            case WHITE_KING:
+                view.setImageDrawable(ContextCompat.getDrawable(getContext(), R.drawable.white_king_ic));
                 break;
             default:
                 view.setImageDrawable(null);

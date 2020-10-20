@@ -1,5 +1,7 @@
 package com.dar.shay.checkedecheckers.datamodels;
 
+import android.util.Log;
+
 import java.util.Arrays;
 
 class Player {
@@ -84,15 +86,22 @@ public class Game {
     }
 
     public TilePickResult move(Point source, Point destination) {
+        Square source_square = board[source.x][source.y];
         TilePickResult tilePick_result_status = ValidateMove(source, destination, is_black_turn);
         if (tilePick_result_status == TilePickResult.INVALID_MOVE)
             return TilePickResult.INVALID_MOVE;
 
         removeSoldier(source);
         if (is_black_turn) {
-            board[destination.x][destination.y] = Square.BLACK_SOLDIER;
+            if (destination.x == 0)
+                board[destination.x][destination.y] = Square.BLACK_KING;
+            else
+                board[destination.x][destination.y] = source_square;
         } else {
-            board[destination.x][destination.y] = Square.WHITE_SOLDIER;
+            if (destination.x == 7)
+                board[destination.x][destination.y] = Square.WHITE_KING;
+            else
+                board[destination.x][destination.y] = source_square;
         }
         if (tilePick_result_status == TilePickResult.EAT) {
             int target_x = (source.x + destination.x) / 2;
@@ -103,16 +112,22 @@ public class Game {
         return tilePick_result_status;
     }
 
+    //TODO: King not eating king
+    //ValidateMove will return in any case of invalid move the status INVALID_MOVE
     TilePickResult ValidateMove(Point source, Point destination, boolean is_black) {
+        //Validate that Destination point is an empty square
+        if (board[destination.x][destination.y] != Square.BLACK_SQUARE)
+            return TilePickResult.INVALID_MOVE;
         int diffX = Math.abs(source.x - destination.x);
         int diffY = Math.abs(source.y - destination.y);
         if (diffX != diffY) return TilePickResult.INVALID_MOVE;
         if (is_black) {
-            if (board[source.x][source.y] != Square.BLACK_SOLDIER)
+            if (source.x - destination.x <= 0 && board[source.x][source.y] != Square.BLACK_KING)
                 return TilePickResult.INVALID_MOVE;
         } else {
-            if (board[source.x][source.y] != Square.WHITE_SOLDIER)
+            if (source.x - destination.x >= 0 && board[source.x][source.y] != Square.WHITE_KING)
                 return TilePickResult.INVALID_MOVE;
+
         }
         //diffX == diffY
         if (diffX == 1 && board[destination.x][destination.y] == Square.BLACK_SQUARE)
@@ -120,9 +135,9 @@ public class Game {
         else if (diffX == 2) {
             int target_x = (source.x + destination.x) / 2;
             int target_y = (source.y + destination.y) / 2;
-            if (is_black && board[target_x][target_y] != Square.WHITE_SOLDIER)
+            if (is_black && (board[target_x][target_y] != Square.WHITE_SOLDIER) && (board[target_x][target_y] != Square.WHITE_KING))
                 return TilePickResult.INVALID_MOVE;
-            if (!is_black && board[target_x][target_y] != Square.BLACK_SOLDIER)
+            if (!is_black && (board[target_x][target_y] != Square.BLACK_SOLDIER) && (board[target_x][target_y] != Square.WHITE_KING))
                 return TilePickResult.INVALID_MOVE;
             return TilePickResult.EAT;
         } else return TilePickResult.INVALID_MOVE;
@@ -136,7 +151,12 @@ public class Game {
      * @return The result of the click
      */
     public TilePickResult tilePick(Point tile) {
+        Log.i("Checke", "TilePicked tile = " + tile.toString() + " w/p = " + waitingPoint + "black turn = " + is_black_turn);
         if (waitingPoint != null) {
+            if (checkIfCurrentSoldier(tile)) {
+                waitingPoint = tile;
+                return TilePickResult.SOLDIER_PICK;
+            }
             TilePickResult move_result = move(waitingPoint, tile);
             if (move_result != TilePickResult.INVALID_MOVE)
                 waitingPoint = null;
@@ -144,16 +164,19 @@ public class Game {
         }
         //
         else {
-            if (!checkIfCorrectSoldier(tile))
+            if (!checkIfCurrentSoldier(tile))
                 return TilePickResult.INVALID_MOVE;
+
             waitingPoint = tile;
             return TilePickResult.SOLDIER_PICK;
         }
     }
 
-    private boolean checkIfCorrectSoldier(Point tile) {
-        Square soldier_type = is_black_turn ? Square.BLACK_SOLDIER : Square.WHITE_SOLDIER;
-        return board[tile.x][tile.y] == soldier_type;
+    private boolean checkIfCurrentSoldier(Point tile) {
+        Square board_tile = board[tile.x][tile.y];
+        if (is_black_turn)
+            return board_tile == Square.BLACK_SOLDIER || board_tile == Square.BLACK_KING;
+        return board_tile == Square.WHITE_SOLDIER || board_tile == Square.WHITE_KING;
     }
 
 }

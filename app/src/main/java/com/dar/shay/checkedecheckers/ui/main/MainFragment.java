@@ -82,6 +82,13 @@ public class MainFragment extends Fragment implements MoveListener {
         switch (click_result) {
             case INVALID_MOVE:
                 Toast.makeText(mContext, "Invalid Move ):", Toast.LENGTH_SHORT).show();
+                break;
+            case SOLDIER_PICK:
+                Toast.makeText(mContext, destination + " Picked", Toast.LENGTH_SHORT).show();
+                break;
+            default:
+                mViewModel.refreshData();
+
         }
     }
 }
