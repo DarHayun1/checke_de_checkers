@@ -4,5 +4,6 @@ public enum TilePickResult {
     STEP,
     EAT,
     INVALID_MOVE,
-    SOLDIER_PICK
+    SOLDIER_PICK,
+    WIN
 }

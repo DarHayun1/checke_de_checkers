@@ -90,9 +90,17 @@ public class Game {
         board[p.x][p.y] = Square.BLACK_SQUARE;
     }
 
+    public static boolean isPointOutOfBounds(Point point) {
+        return corOutOfBounds(point.x) || corOutOfBounds(point.y);
+    }
+
+    private static boolean corOutOfBounds(int cor) {
+        return cor < 0 || cor > BOARD_SIZE;
+    }
+
     public TilePickResult move(Point source, Point destination) {
         Square source_square = board[source.x][source.y];
-        TilePickResult tilePick_result_status = ValidateMove(source, destination, is_black_turn);
+        TilePickResult tilePick_result_status = validateMove(source, destination, is_black_turn);
         if (tilePick_result_status == TilePickResult.INVALID_MOVE)
             return TilePickResult.INVALID_MOVE;
 
@@ -113,14 +121,38 @@ public class Game {
             int target_y = (source.y + destination.y) / 2;
             removeSoldier(new Point(target_x, target_y));
         }
-        is_black_turn = !is_black_turn;
+
+        if (endTurnCheckWin())
+            tilePick_result_status = TilePickResult.WIN;
+
         return tilePick_result_status;
     }
 
-    //TODO: King not eating king
+    private boolean endTurnCheckWin() {
+        if (isPlayerStuck(!is_black_turn))
+            return true;
+        is_black_turn = !is_black_turn;
+        return false;
+    }
+
+    private boolean isPlayerStuck(boolean is_black) {
+
+//        Square soldier_square = is_black ? Square.BLACK_SOLDIER : Square.WHITE_SOLDIER;
+//        Square king_square = is_black ? Square.BLACK_KING : Square.WHITE_KING;
+//        if (is_black) {
+//            if (Arrays.stream(board).flatMap(Arrays::stream)
+//                    .noneMatch(square -> square == soldier_square || square == king_square))
+//                return true;
+//            Arrays.stream()
+//        }
+        return false;
+    }
+
     //ValidateMove will return in any case of invalid move the status INVALID_MOVE
-    TilePickResult ValidateMove(Point source, Point destination, boolean is_black) {
+    TilePickResult validateMove(Point source, Point destination, boolean is_black) {
         //Validate that Destination point is an empty square
+        if (isPointOutOfBounds(source) || isPointOutOfBounds(destination))
+            return TilePickResult.INVALID_MOVE;
         if (board[destination.x][destination.y] != Square.BLACK_SQUARE)
             return TilePickResult.INVALID_MOVE;
         int diffX = Math.abs(source.x - destination.x);

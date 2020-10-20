@@ -60,4 +60,13 @@
         app:layout_constraintStart_toEndOf="@+id/turn_tv"
         app:layout_constraintTop_toTopOf="@+id/turn_tv" />
 
+    <Button
+        android:id="@+id/new_game_btn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="New Game"
+        app:layout_constraintBottom_toTopOf="@+id/turn_tv"
+        app:layout_constraintStart_toStartOf="@+id/turn_tv"
+        app:layout_constraintTop_toTopOf="parent" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>
