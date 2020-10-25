@@ -14,7 +14,7 @@ class Player {
     }
 }
 
-public class Game {
+class Game {
 
     public final static int BOARD_SIZE = 8;
 
@@ -95,7 +95,7 @@ public class Game {
     }
 
     private static boolean corOutOfBounds(int cor) {
-        return cor < 0 || cor > BOARD_SIZE;
+        return cor < 0 || cor >= BOARD_SIZE;
     }
 
     public TilePickResult move(Point source, Point destination) {
@@ -135,17 +135,36 @@ public class Game {
         return false;
     }
 
-    private boolean isPlayerStuck(boolean is_black) {
+    public boolean isPlayerStuck(boolean is_black) {
 
-//        Square soldier_square = is_black ? Square.BLACK_SOLDIER : Square.WHITE_SOLDIER;
-//        Square king_square = is_black ? Square.BLACK_KING : Square.WHITE_KING;
-//        if (is_black) {
-//            if (Arrays.stream(board).flatMap(Arrays::stream)
-//                    .noneMatch(square -> square == soldier_square || square == king_square))
-//                return true;
-//            Arrays.stream()
-//        }
-        return false;
+        Square soldier_square = is_black ? Square.BLACK_SOLDIER : Square.WHITE_SOLDIER;
+        Square king_square = is_black ? Square.BLACK_KING : Square.WHITE_KING;
+        for (int i = 0; i < BOARD_SIZE; i++) {
+            for (int j = 0; j < BOARD_SIZE; j++) {
+
+                if (board[i][j] == soldier_square && hasAvailableSoldierMove(new Point(i, j), is_black)) {
+                    return false;
+                }
+                if (board[i][j] == king_square && hasAvailableKingMove(new Point(i, j), is_black)) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    boolean hasAvailableSoldierMove(Point point, boolean is_black) {
+        return point.getOptionalPoints().stream().anyMatch(dest -> {
+            TilePickResult move_type = validateMove(point, dest, is_black);
+            return move_type != TilePickResult.INVALID_MOVE && move_type != TilePickResult.SOLDIER_PICK;
+        });
+    }
+
+    boolean hasAvailableKingMove(Point point, boolean is_black) {
+        return point.getOptionalPoints().stream().anyMatch(dest -> {
+            TilePickResult move_type = validateMove(point, dest, is_black);
+            return move_type != TilePickResult.INVALID_MOVE && move_type != TilePickResult.SOLDIER_PICK;
+        });
     }
 
     //ValidateMove will return in any case of invalid move the status INVALID_MOVE

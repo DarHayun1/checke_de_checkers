@@ -98,6 +98,9 @@ public class MainFragment extends Fragment implements MoveListener {
             case SOLDIER_PICK:
                 Toast.makeText(mContext, destination + " Picked", Toast.LENGTH_SHORT).show();
                 break;
+            case WIN:
+                Toast.makeText(mContext, "!~!~!~!WIN!~!~!~!", Toast.LENGTH_SHORT).show();
+                break;
             default:
                 mViewModel.refreshData();
 
