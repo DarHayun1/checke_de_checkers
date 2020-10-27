@@ -26,7 +26,7 @@ public class Game {
 
     public final static int BOARD_SIZE = 8;
     private static final double WEIGHT = 0.5;
-    private static final int TIME_LIMIT = 1;
+    private static final int TIME_LIMIT = 3;
 
 
     Square[][] board;
@@ -177,7 +177,6 @@ public class Game {
             }
         }
         return moves.stream().filter(move -> {
-            Square origin = board[move.first.x][move.first.y];
             return validateMove(move.first, move.second, is_black_turn) != TilePickResult.INVALID_MOVE;
         }).collect(Collectors.toCollection(ArrayList::new));
     }

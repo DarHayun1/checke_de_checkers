@@ -75,7 +75,7 @@ public class AlphaBeta {
             next_iteration = nextIterationTimeEstimation(moveAlphaBeta.total_number_of_nodes, last_iteration_time) * 2;
             time_until_now = ((double) Duration.between(start, Instant.now()).toMillis()) / 1000;
             is_optimal = moveAlphaBeta.is_optimal_value;
-            Log.i("pickAMove", "while || " + moveAlphaBeta.move);
+            Log.i("pickAMove", "while || " + moveAlphaBeta.move.toString());
         }
         return moveAlphaBeta;
 
@@ -90,7 +90,9 @@ public class AlphaBeta {
         ArrayList<Pair<Point, Point>> possible_moves = game.getOptionalMoves();
         //TODO: מחזיר נל לפעמים, מה קורה במצב של סוף משחק?
         Pair<Point, Point> best_move = possible_moves.get(0);
+        Log.d("possibleMoves", possible_moves.toString());
         for (Pair<Point, Point> move : possible_moves) {
+            Square origin_sq = game.board[move.first.x][move.first.y];
             int target_x = (move.first.x + move.second.x) / 2;
             int target_y = (move.first.y + move.second.y) / 2;
             Square target = game.board[target_x][target_y];
@@ -98,7 +100,7 @@ public class AlphaBeta {
             if (game.move(move.first, move.second) == TilePickResult.INVALID_MOVE) continue;
             AlphaBetaResult move_result = rbAlphaBeta(game, depth, -10, 10);
             Log.w("Checke", "for after move()");
-            setPlayerBack(game, move, target);
+            setPlayerBack(game, move, origin_sq, target);
             if (move_result.minmax_value > best_minimax_val) {
                 is_optimal_val = move_result.is_optimal_value;
                 best_minimax_val = move_result.minmax_value;
@@ -165,7 +167,7 @@ public class AlphaBeta {
             Square target = game.board[target_x][target_y];
             if (game.move(move.first, move.second) == TilePickResult.INVALID_MOVE) continue;
             AlphaBetaResult alphabeta_res = rbAlphaBeta(game, depth - 1, alpha, beta);
-            setPlayerBack(game, move, target);
+            setPlayerBack(game, move, origin_sq, target);
             total_nodes_num += alphabeta_res.total_number_of_nodes;
 
             if (game.isBlackTurn()) { // maximizer
@@ -280,8 +282,8 @@ public class AlphaBeta {
 
 
     //backtracking the steps for RbAlphaBeta agent
-    private void setPlayerBack(Game game, Pair<Point, Point> move, Square target) {
-        game.board[move.first.x][move.first.y] = game.board[move.second.x][move.second.y];
+    private void setPlayerBack(Game game, Pair<Point, Point> move, Square soldier, Square target) {
+        game.board[move.first.x][move.first.y] = soldier;
         game.board[move.second.x][move.second.y] = Square.BLACK_SQUARE;
         //If the move was eat
         if (Math.abs(Math.abs(move.first.x) - Math.abs(move.second.x)) > 1) {
