@@ -1,8 +1,11 @@
 package com.dar.shay.checkedecheckers.datamodels;
 
 import android.util.Log;
+import android.util.Pair;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.stream.Collectors;
 
 class Player {
     boolean is_black;
@@ -12,17 +15,27 @@ class Player {
         this.is_black = is_black;
         this.is_human = is_human;
     }
+
+    public Player copy() {
+        return new Player(this.is_black, this.is_human);
+    }
+
 }
 
-class Game {
+public class Game {
 
     public final static int BOARD_SIZE = 8;
+    private static final double WEIGHT = 0.5;
+    private static final int TIME_LIMIT = 1;
+
 
     Square[][] board;
     Player black_player;
     Player white_player;
+    boolean against_pc = true;
+    private AlphaBeta pc_agent = new AlphaBeta(WEIGHT);
 
-    private boolean is_black_turn = true;
+    private boolean is_black_turn = false;
 
     public boolean isBlackTurn() {
         return is_black_turn;
@@ -46,6 +59,8 @@ class Game {
 
     public Game(boolean is_black_start) {
         board = getStartBoard();
+        this.black_player = new Player(true, false);
+        this.white_player = new Player(false, true);
         this.is_black_turn = is_black_start;
     }
 
@@ -128,6 +143,13 @@ class Game {
         return tilePick_result_status;
     }
 
+    public Game(Game game) {
+        this.board = Arrays.stream(game.board).map(Square[]::clone).toArray(Square[][]::new);
+        this.is_black_turn = game.is_black_turn;
+        this.black_player = game.black_player.copy();
+        this.white_player = game.white_player.copy();
+    }
+
     private boolean endTurnCheckWin() {
         if (isPlayerStuck(!is_black_turn))
             return true;
@@ -135,22 +157,29 @@ class Game {
         return false;
     }
 
-    public boolean isPlayerStuck(boolean is_black) {
+    ArrayList<Pair<Point, Point>> getOptionalMoves() {
 
-        Square soldier_square = is_black ? Square.BLACK_SOLDIER : Square.WHITE_SOLDIER;
-        Square king_square = is_black ? Square.BLACK_KING : Square.WHITE_KING;
+        Square soldier_sq = is_black_turn ? Square.BLACK_SOLDIER : Square.WHITE_SOLDIER;
+        Square king_sq = is_black_turn ? Square.BLACK_KING : Square.WHITE_KING;
+
+        ArrayList<Pair<Point, Point>> moves = new ArrayList<>();
         for (int i = 0; i < BOARD_SIZE; i++) {
             for (int j = 0; j < BOARD_SIZE; j++) {
-
-                if (board[i][j] == soldier_square && hasAvailableSoldierMove(new Point(i, j), is_black)) {
-                    return false;
-                }
-                if (board[i][j] == king_square && hasAvailableKingMove(new Point(i, j), is_black)) {
-                    return false;
+                Square origin_sq = board[i][j];
+                if (origin_sq == soldier_sq || origin_sq == king_sq) {
+                    Point point = new Point(i, j);
+                    ArrayList<Point> optionalPoints = point.getOptionalPoints();
+                    optionalPoints.forEach(point1 -> {
+                        if (validateMove(point, point1, is_black_turn) != TilePickResult.INVALID_MOVE)
+                            moves.add(new Pair<>(point, point1));
+                    });
                 }
             }
         }
-        return true;
+        return moves.stream().filter(move -> {
+            Square origin = board[move.first.x][move.first.y];
+            return validateMove(move.first, move.second, is_black_turn) != TilePickResult.INVALID_MOVE;
+        }).collect(Collectors.toCollection(ArrayList::new));
     }
 
     boolean hasAvailableSoldierMove(Point point, boolean is_black) {
@@ -167,37 +196,22 @@ class Game {
         });
     }
 
-    //ValidateMove will return in any case of invalid move the status INVALID_MOVE
-    TilePickResult validateMove(Point source, Point destination, boolean is_black) {
-        //Validate that Destination point is an empty square
-        if (isPointOutOfBounds(source) || isPointOutOfBounds(destination))
-            return TilePickResult.INVALID_MOVE;
-        if (board[destination.x][destination.y] != Square.BLACK_SQUARE)
-            return TilePickResult.INVALID_MOVE;
-        int diffX = Math.abs(source.x - destination.x);
-        int diffY = Math.abs(source.y - destination.y);
-        if (diffX != diffY) return TilePickResult.INVALID_MOVE;
-        if (is_black) {
-            if (source.x - destination.x <= 0 && board[source.x][source.y] != Square.BLACK_KING)
-                return TilePickResult.INVALID_MOVE;
-        } else {
-            if (source.x - destination.x >= 0 && board[source.x][source.y] != Square.WHITE_KING)
-                return TilePickResult.INVALID_MOVE;
+    boolean isPlayerStuck(boolean is_black) {
 
+        Square soldier_square = is_black ? Square.BLACK_SOLDIER : Square.WHITE_SOLDIER;
+        Square king_square = is_black ? Square.BLACK_KING : Square.WHITE_KING;
+        for (int i = 0; i < BOARD_SIZE; i++) {
+            for (int j = 0; j < BOARD_SIZE; j++) {
+
+                if (board[i][j] == soldier_square && hasAvailableSoldierMove(new Point(i, j), is_black)) {
+                    return false;
+                }
+                if (board[i][j] == king_square && hasAvailableKingMove(new Point(i, j), is_black)) {
+                    return false;
+                }
+            }
         }
-        //diffX == diffY
-        if (diffX == 1 && board[destination.x][destination.y] == Square.BLACK_SQUARE)
-            return TilePickResult.STEP;
-        else if (diffX == 2) {
-            int target_x = (source.x + destination.x) / 2;
-            int target_y = (source.y + destination.y) / 2;
-            if (is_black && (board[target_x][target_y] != Square.WHITE_SOLDIER) && (board[target_x][target_y] != Square.WHITE_KING))
-                return TilePickResult.INVALID_MOVE;
-            if (!is_black && (board[target_x][target_y] != Square.BLACK_SOLDIER) && (board[target_x][target_y] != Square.BLACK_KING))
-                return TilePickResult.INVALID_MOVE;
-            return TilePickResult.EAT;
-        } else return TilePickResult.INVALID_MOVE;
-
+        return true;
     }
 
     /**
@@ -235,28 +249,52 @@ class Game {
         return board_tile == Square.WHITE_SOLDIER || board_tile == Square.WHITE_KING;
     }
 
+    //ValidateMove will return in any case of invalid move the status INVALID_MOVE
+    TilePickResult validateMove(Point source, Point destination, boolean is_black) {
+        //Validate that Destination point is an empty square
+        if (source.x == 3 && destination.x == 5) {
+            System.out.println("x");
+        }
+        if (isPointOutOfBounds(source) || isPointOutOfBounds(destination))
+            return TilePickResult.INVALID_MOVE;
+        if (board[destination.x][destination.y] != Square.BLACK_SQUARE)
+            return TilePickResult.INVALID_MOVE;
+        int diffX = Math.abs(source.x - destination.x);
+        int diffY = Math.abs(source.y - destination.y);
+        if (diffX != diffY) return TilePickResult.INVALID_MOVE;
+        if (is_black) {
+            if (source.x - destination.x <= 0 && board[source.x][source.y] != Square.BLACK_KING)
+                return TilePickResult.INVALID_MOVE;
+        } else {
+            if (source.x - destination.x >= 0 && board[source.x][source.y] != Square.WHITE_KING)
+                return TilePickResult.INVALID_MOVE;
+
+        }
+        //diffX == diffY
+        if (diffX == 1 && board[destination.x][destination.y] == Square.BLACK_SQUARE)
+            return TilePickResult.STEP;
+        else if (diffX == 2) {
+            int target_x = (source.x + destination.x) / 2;
+            int target_y = (source.y + destination.y) / 2;
+            if (is_black && (board[target_x][target_y] != Square.WHITE_SOLDIER) && (board[target_x][target_y] != Square.WHITE_KING))
+                return TilePickResult.INVALID_MOVE;
+            if (!is_black && (board[target_x][target_y] != Square.BLACK_SOLDIER) && (board[target_x][target_y] != Square.BLACK_KING))
+                return TilePickResult.INVALID_MOVE;
+            return TilePickResult.EAT;
+        } else return TilePickResult.INVALID_MOVE;
+
+    }
+
+    private Game copyOf() {
+        return new Game(this);
+    }
+
+    public void agentMove() {
+        AlphaBetaResult result = pc_agent.getMove(TIME_LIMIT, this.copyOf());
+        move(result.move.first, result.move.second);
+    }
+
+    void switchTurn() {
+        this.is_black_turn = !this.is_black_turn;
+    }
 }
-/*
-*  int diffX,diffY;
-        //checking if s is a valid soldier and p is an empty square
-        if( s == nullptr || !(this->is_empty_square(p))){
-            return false;
-        }
-        diffY = abs(p.gety()-s->p.gety());
-        diffX = abs(p.getx()-s->p.getx());
-        //movement is always diagonal
-        if(diffX != diffY){
-            return false;
-        }
-        if( diffY == 1){
-            return true;
-        }
-        if(diffY == 2){
-            if(diffX == 2){
-            int x = (p.getx()+s->p.getx())/2;
-            int y = (p.gety()+s->p.gety())/2;
-            Coordinate predicate_soldier(x,y);
-            return valid_pred(cur_player,p);
-            }
-        }
-        return false;*/

@@ -28,6 +28,7 @@ public class Point {
 
     }
 
+
     Point TopRight() {
         return new Point(x + 1, y - 1);
     }

@@ -103,6 +103,7 @@ public class MainFragment extends Fragment implements MoveListener {
                 break;
             default:
                 mViewModel.refreshData();
+                mViewModel.agentMove();
 
         }
     }
