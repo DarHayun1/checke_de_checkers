@@ -37,6 +37,8 @@ public class MainViewModel extends ViewModel {
 
     public void newGame(boolean is_black_start) {
         game = new Game(is_black_start);
+        game.setToEndGame();
+
         refreshData();
     }
 

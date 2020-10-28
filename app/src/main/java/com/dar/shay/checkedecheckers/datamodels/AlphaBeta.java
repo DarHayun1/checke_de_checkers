@@ -91,6 +91,7 @@ public class AlphaBeta {
         //TODO: מחזיר נל לפעמים, מה קורה במצב של סוף משחק?
         Pair<Point, Point> best_move = possible_moves.get(0);
         Log.d("possibleMoves", possible_moves.toString());
+        Log.d("possibleMovesBest", best_move.toString());
         for (Pair<Point, Point> move : possible_moves) {
             Square origin_sq = game.board[move.first.x][move.first.y];
             int target_x = (move.first.x + move.second.x) / 2;
@@ -108,6 +109,7 @@ public class AlphaBeta {
                 best_leaves = move_result.total_number_of_nodes;
             }
         }
+        Log.d("possibleMovesBest2", best_move.toString());
         return new AlphaBetaResult(best_minimax_val, best_leaves, is_optimal_val, best_move);
 
     }

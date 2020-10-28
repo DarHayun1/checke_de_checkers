@@ -63,6 +63,7 @@ public class MainFragment extends Fragment implements MoveListener {
         binding.newGameBtn.setOnClickListener(v -> {
             mViewModel.newGame(false);
         });
+
     }
 
     private void setupObservers() {

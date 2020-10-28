@@ -151,9 +151,9 @@ public class Game {
     }
 
     private boolean endTurnCheckWin() {
-        if (isPlayerStuck(!is_black_turn))
-            return true;
         is_black_turn = !is_black_turn;
+        if (isPlayerStuck(is_black_turn))
+            return true;
         return false;
     }
 
@@ -296,4 +296,89 @@ public class Game {
     void switchTurn() {
         this.is_black_turn = !this.is_black_turn;
     }
+
+    public void setToEndGame() {
+        for (int i = 0; i < BOARD_SIZE; i = i + 2) {
+            //setting the matrix to default values
+            //line 0
+            if (i==2)
+            {
+                this.board[0][i] = Square.WHITE_SQUARE;
+                this.board[0][i + 1] = Square.WHITE_KING;
+                //line 1
+                this.board[1][i] = Square.WHITE_KING;
+                this.board[1][i + 1] = Square.WHITE_SQUARE;
+                //line 2
+                this.board[2][i] = Square.WHITE_SQUARE;
+                this.board[2][i + 1] = Square.WHITE_KING;
+                //line 3
+                this.board[3][i] = Square.WHITE_KING;
+                this.board[3][i + 1] = Square.WHITE_SQUARE;
+                //line 4
+                this.board[4][i] = Square.WHITE_SQUARE;
+                this.board[4][i + 1] = Square.WHITE_KING;
+                //line 5
+                this.board[5][i] = Square.WHITE_KING;
+                this.board[5][i + 1] = Square.WHITE_SQUARE;
+                //line 6
+                this.board[6][i] = Square.WHITE_SQUARE;
+                this.board[6][i + 1] = Square.WHITE_KING;
+                //line 7
+                this.board[7][i] = Square.WHITE_KING;
+                this.board[7][i + 1] = Square.WHITE_SQUARE;
+            }
+            else if (i==6)
+            {
+                this.board[0][i] = Square.WHITE_SQUARE;
+                this.board[0][i + 1] = Square.WHITE_KING;
+                //line 1
+                this.board[1][i] = Square.BLACK_SQUARE;
+                this.board[1][i + 1] = Square.WHITE_SQUARE;
+                //line 2
+                this.board[2][i] = Square.WHITE_SQUARE;
+                this.board[2][i + 1] = Square.BLACK_SQUARE;
+                //line 3
+                this.board[3][i] = Square.BLACK_SQUARE;
+                this.board[3][i + 1] = Square.WHITE_SQUARE;
+                //line 4
+                this.board[4][i] = Square.WHITE_SQUARE;
+                this.board[4][i + 1] = Square.BLACK_SQUARE;
+                //line 5
+                this.board[5][i] = Square.WHITE_KING;
+                this.board[5][i + 1] = Square.WHITE_SQUARE;
+                //line 6
+                this.board[6][i] = Square.WHITE_SQUARE;
+                this.board[6][i + 1] = Square.BLACK_SOLDIER;
+                //line 7
+                this.board[7][i] = Square.BLACK_SQUARE;
+                this.board[7][i + 1] = Square.WHITE_SQUARE;
+            }
+            else {
+                this.board[0][i] = Square.WHITE_SQUARE;
+                this.board[0][i + 1] = Square.BLACK_SQUARE;
+                //line 1
+                this.board[1][i] = Square.BLACK_SQUARE;
+                this.board[1][i + 1] = Square.WHITE_SQUARE;
+                //line 2
+                this.board[2][i] = Square.WHITE_SQUARE;
+                this.board[2][i + 1] = Square.BLACK_SQUARE;
+                //line 3
+                this.board[3][i] = Square.BLACK_SQUARE;
+                this.board[3][i + 1] = Square.WHITE_SQUARE;
+                //line 4
+                this.board[4][i] = Square.WHITE_SQUARE;
+                this.board[4][i + 1] = Square.BLACK_SQUARE;
+                //line 5
+                this.board[5][i] = Square.BLACK_SQUARE;
+                this.board[5][i + 1] = Square.WHITE_SQUARE;
+                //line 6
+                this.board[6][i] = Square.WHITE_SQUARE;
+                this.board[6][i + 1] = Square.BLACK_SQUARE;
+                //line 7
+                this.board[7][i] = Square.BLACK_SQUARE;
+                this.board[7][i + 1] = Square.WHITE_SQUARE;
+            }
+        }
+    }
+
 }
